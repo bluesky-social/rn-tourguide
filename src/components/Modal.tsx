@@ -204,17 +204,18 @@ export class Modal extends React.Component<ModalProps, State> {
       toValue,
       duration,
       easing: this.props.easing,
-      delay: duration,
       useNativeDriver: true,
     })
-    const opacityAnim = Animated.timing(this.state.opacity, {
-      toValue: 1,
-      duration,
-      easing: this.props.easing,
-      delay: duration,
-      useNativeDriver: true,
-    })
-    this.state.opacity.setValue(0)
+    let opacityAnim
+    if (this.props.isFirstStep) {
+      opacityAnim = Animated.timing(this.state.opacity, {
+        toValue: 1,
+        duration,
+        easing: this.props.easing,
+        useNativeDriver: true,
+      })
+      this.state.opacity.setValue(0)
+    }
     // Set the tooltip content when the opacity is 0
     this.setState({
       isFirstStep: this.props.isFirstStep,
@@ -226,9 +227,13 @@ export class Modal extends React.Component<ModalProps, State> {
       toValue !== this.state.tooltipTranslateY._value &&
       !this.props.currentStep?.keepTooltipPosition
     ) {
-      Animated.parallel([translateAnim, opacityAnim]).start()
+      if (opacityAnim) {
+        Animated.parallel([translateAnim, opacityAnim]).start()
+      } else {
+        translateAnim.start()
+      }
     } else {
-      opacityAnim.start()
+      opacityAnim?.start()
     }
 
     this.setState({
